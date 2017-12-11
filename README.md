@@ -1,2 +1,2 @@
 # search
-A search system!
+A search system base on Laravel!
