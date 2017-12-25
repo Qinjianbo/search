@@ -101,62 +101,62 @@ class Blog extends Model
 
     public function createIndice(array $unused)
     {
-         return Elasticsearch::indices()->create(
-	        $unused + [ 
+        return Elasticsearch::indices()->create(
+	        $unused + [
                    'body' => [
-	                  'settings' => [
-	                      'number_of_shards' => 2,
-	                      'number_of_replicas' => 2,
-	                      'index' => [
-	                           'analysis' => [
-	                           'analyzer' => [
-	                              'ik_max_word' => ['tokenizer' => 'ik_max_word'],
-	                              'ik_smart' => ['tokenizer' => 'ik_smart'],
-	                            ],
-	                         ],
-	                      ],
+	              'settings' => [
+	                  'number_of_shards' => 2,
+	                  'number_of_replicas' => 2,
+	                  'index' => [
+	                       'analysis' => [
+	                       'analyzer' => [
+	                          'ik_max_word' => ['tokenizer' => 'ik_max_word'],
+	                          'ik_smart' => ['tokenizer' => 'ik_smart'],
+	                        ],
+	                     ],
 	                  ],
+	              ],
 	          ],
-	     ]    
+	     ]
         );
     }
 
     public function putMapping($unused)
     {
         $properties = [
-			'title' => [
-				'type' => 'text', 'boost' => 50.0, 'analyzer' => 'ik_max_word',
-				'search_analyzer' => 'ik_smart', 'copy_to' => 'combined',
-				'fields' => ['keyword' => ['type' => 'keyword']],
-			],
-			'description' => [
-				'type' => 'text', 'boost' => 2, 'analyzer' => 'ik_max_word',
-				'search_analyzer' => 'ik_smart', 'copy_to' => 'combined',
-				'fields' => ['keyword' => ['type' => 'keyword']],
-			],
-			'combined' => [
-				'type' => 'text', 'boost' => 2, 'analyzer' => 'ik_max_word',
-				'search_analyzer' => 'ik_smart', 'copy_to' => 'combined',
-			],
-			'reading' => ['type' => 'long'],
-			'year_month' => ['type' => 'long'],
-		];
+	    'title' => [
+	        'type' => 'text', 'boost' => 50.0, 'analyzer' => 'ik_max_word',
+	        'search_analyzer' => 'ik_smart', 'copy_to' => 'combined',
+	        'fields' => ['keyword' => ['type' => 'keyword']],
+	    ],
+	    'description' => [
+	        'type' => 'text', 'boost' => 2, 'analyzer' => 'ik_max_word',
+	        'search_analyzer' => 'ik_smart', 'copy_to' => 'combined',
+	        'fields' => ['keyword' => ['type' => 'keyword']],
+	    ],
+	    'combined' => [
+	        'type' => 'text', 'boost' => 2, 'analyzer' => 'ik_max_word',
+	        'search_analyzer' => 'ik_smart', 'copy_to' => 'combined',
+	    ],
+	    'reading' => ['type' => 'long'],
+	    'year_month' => ['type' => 'long'],
+	];
 
         Elasticsearch::indices()->putMapping(
 		    $unused + [
-			    'type' => $this->esType,
-				'body' => [
-				    $this->esType => [
-					    '_source' => ['enabled' => true],
-						'include_in_all' => false,
-						'_all' => [
-							'analyzer' => 'ik_max_word', 'search_analyzer' => 'ik_smart',
-							'enabled' => false,
-						],
-						'properties' => $properties,
-					],
+			'type' => $this->esType,
+			'body' => [
+			    $this->esType => [
+				'_source' => ['enabled' => true],
+			        'include_in_all' => false,
+				'_all' => [
+					'analyzer' => 'ik_max_word', 'search_analyzer' => 'ik_smart',
+					'enabled' => false,
 				],
-			]
-		);
+				'properties' => $properties,
+			    ],
+		        ],
+		    ]
+	);
     }
 }
