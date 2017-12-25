@@ -11,10 +11,11 @@ namespace App\Models\Blog;
 
 use App\Models\Model;
 use Cviebrock\LaravelElasticsearch\Facade as Elasticsearch;
+use Illuminate\Support\Collection;
 
 class Blog extends Model
 {
-    protected $table = 'blog';
+    protected $table = 'blogs';
 
     protected $esIndex = [0 => 'blog_v0', 1 => 'blog_v1'];
 
@@ -55,7 +56,7 @@ class Blog extends Model
         }
         $this->createIndice($unused);
         $this->putMapping($unused);
-        foreach ($this->getList(collect())->chunk(10) as $chunk) {
+        foreach ($this->getList(collect(['select' => 'title,description,reading,created_at']))->chunk(10) as $chunk) {
             $params = ['body' => []];
             foreach ($chunk as $product) {
                 $params['body'][] = [
@@ -158,5 +159,25 @@ class Blog extends Model
 		        ],
 		    ]
 	);
+    }
+
+    public function getUsedIndice()
+    {
+        try {
+            $indice = Elasticsearch::indices()->getAlias(['name' => $this->esAliasIndex]);
+
+            return collect(array_keys($indice))->mapWithKeys(function ($item) {
+                return ['index' => $item];
+            })
+            ->toArray();
+        } catch (\Elasticsearch\Common\Exceptions\Missing404Exception $e) {
+            return;
+        }
+    }
+
+    public function getList(Collection $input)
+    {
+        return self::select(explode(',', $input->get('select', '*')))
+            ->get();
     }
 }
