@@ -137,7 +137,7 @@ class Blog extends Model
 	    ],
 	    'combined' => [
 	        'type' => 'text', 'boost' => 2, 'analyzer' => 'ik_max_word',
-	        'search_analyzer' => 'ik_smart', 'copy_to' => 'combined',
+	        'search_analyzer' => 'ik_smart',
 	    ],
 	    'reading' => ['type' => 'long'],
 	    'year_month' => ['type' => 'long'],
@@ -149,11 +149,6 @@ class Blog extends Model
 			'body' => [
 			    $this->esType => [
 				'_source' => ['enabled' => true],
-			        'include_in_all' => false,
-				'_all' => [
-					'analyzer' => 'ik_max_word', 'search_analyzer' => 'ik_smart',
-					'enabled' => false,
-				],
 				'properties' => $properties,
 			    ],
 		        ],
