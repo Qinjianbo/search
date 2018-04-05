@@ -56,7 +56,8 @@ class Blog extends Model
         }
         $this->createIndice($unused);
         $this->putMapping($unused);
-        foreach ($this->getList(collect(['select' => 'title,description,reading,created_at']))->chunk(10) as $chunk) {
+        $list = $this->getList(collect(['select' => 'id,user_id,title,description,reading,created_at']));
+        foreach ($list->chunk(10) as $chunk) {
             $params = ['body' => []];
             foreach ($chunk as $product) {
                 $params['body'][] = [
@@ -71,7 +72,6 @@ class Blog extends Model
             Elasticsearch :: bulk($params);
             info('bulk '. $chunk->count() . ' ok.');
             unset($params, $chunk);
-            sleep(1);
         }
         $actions = [];
         if ($used = $this->getUsedIndice()) {
@@ -141,6 +141,8 @@ class Blog extends Model
 	    ],
 	    'reading' => ['type' => 'long'],
 	    'year_month' => ['type' => 'long'],
+	    'user_id' => ['type' => 'long'],
+	    'id' => ['type' => 'long'],
 	];
 
         Elasticsearch::indices()->putMapping(

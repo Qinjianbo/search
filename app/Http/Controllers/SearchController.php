@@ -22,30 +22,37 @@ class SearchController extends Controller
         $size = $request->input('ps', 10);
         $from = ($request->input('p', 1) - 1) * $size;
         $q = $request->get('q', '');
-        if (!$q) {
-            return collect();
-        }
         $default = [
             'index' => (new Blog())->getEsAliasIndex(),
             'type' => (new Blog())->getEsType(),
             'size' => $size,
             'from' => $from,
         ];
-        $criteria = [
-            'sort' => ['reading' => 'desc'],
-            'query' => [
-                'multi_match' => [
-                    'query' => $q,
-                    'fields' => ['title^3', 'description'],
+        if ($q) {
+            $criteria = [
+                'sort' => ['reading' => 'desc'],
+                'query' => [
+                    'multi_match' => [
+                        'query' => $q,
+                        'fields' => ['title^3', 'description'],
+                    ],
                 ],
-            ],
-        ];
+                'highlight' => [
+                    'fields' => [
+                        'title' => new \StdClass()
+                    ],
+                ],
+            ];
+        } else {
+            $criteria = ['sort' => ['reading' => 'desc'], 'query' => ['match_all' => new \StdClass()]];
+        }
+        //info('query:'.json_encode($criteria));
         $result = ElasticSearch::search(array_merge($default, ['body' => $criteria]));
 
         return collect([
             'count' => $result['hits']['total'],
-            'list' => $this->buildResponse(collect($result['hits']['hits']))]
-        );
+            'list' => $this->buildResponse(collect($result['hits']['hits']))->values()
+        ]);
     }
 
     /**
@@ -58,6 +65,10 @@ class SearchController extends Controller
     public function buildResponse(Collection $result): Collection
     {
         return $result->map(function ($item) {
+            $item['_source']['title'] = $item['highlight']['title'][0] ?
+                //htmlspecialchars($item['highlight']['title'][0]) : $item['_source']['title'];
+                $item['highlight']['title'][0] : $item['_source']['title'];
+
             return $item['_source'];
         });
     }
