@@ -46,7 +46,7 @@ class SearchController extends Controller
         } else {
             $criteria = ['sort' => ['reading' => 'desc'], 'query' => ['match_all' => new \StdClass()]];
         }
-        //info('query:'.json_encode($criteria));
+        info('query:'.json_encode($criteria));
         $result = ElasticSearch::search(array_merge($default, ['body' => $criteria]));
 
         return collect([
@@ -65,9 +65,9 @@ class SearchController extends Controller
     public function buildResponse(Collection $result): Collection
     {
         return $result->map(function ($item) {
-            $item['_source']['title'] = $item['highlight']['title'][0] ?
-                //htmlspecialchars($item['highlight']['title'][0]) : $item['_source']['title'];
-                $item['highlight']['title'][0] : $item['_source']['title'];
+            $title = collect($item)->get('highlight', ['title' => []]);
+            $title = $title['title'][0] ?? '';
+            $title ? $item['_source']['title'] = $title : '';
 
             return $item['_source'];
         });
