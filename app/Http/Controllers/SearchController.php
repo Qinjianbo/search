@@ -43,10 +43,10 @@ class SearchController extends Controller
                     ],
                 ],
             ];
+            info('query:'.json_encode($criteria));
         } else {
             $criteria = ['sort' => ['reading' => 'desc'], 'query' => ['match_all' => new \StdClass()]];
         }
-        info('query:'.json_encode($criteria));
         $result = ElasticSearch::search(array_merge($default, ['body' => $criteria]));
 
         return collect([
