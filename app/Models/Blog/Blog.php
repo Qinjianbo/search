@@ -56,7 +56,7 @@ class Blog extends Model
         }
         $this->createIndice($unused);
         $this->putMapping($unused);
-        $list = $this->getList(collect(['select' => 'id,user_id,title,description,reading,created_at']));
+        $list = $this->getList(collect(['select' => 'id,user_id,title,description,reading,created_at,tags']));
         foreach ($list->chunk(10) as $chunk) {
             $params = ['body' => []];
             foreach ($chunk as $product) {
@@ -135,6 +135,11 @@ class Blog extends Model
 	        'search_analyzer' => 'ik_smart', 'copy_to' => 'combined',
 	        'fields' => ['keyword' => ['type' => 'keyword']],
 	    ],
+        'taga' => [
+            'type' => 'text', 'analyzer' => 'ik_max_word',
+            'search_analyzer' => 'ik_smart', 'copy_to' => 'combined',
+            'fields' => ['keyword' => ['type' => 'keyword']],
+        ],
 	    'combined' => [
 	        'type' => 'text', 'boost' => 2, 'analyzer' => 'ik_max_word',
 	        'search_analyzer' => 'ik_smart',
