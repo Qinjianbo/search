@@ -47,6 +47,9 @@ class Blog extends Model
         return $this->esType;
     }
 
+    /**
+     * 批量创建索引
+     */
     public function bulkIndex()
     {
         $unused = $this->getUnusedIndice();
@@ -85,6 +88,11 @@ class Blog extends Model
         return true;
     }
 
+    /**
+     * 获取一个未使用的索引
+     *
+     * @return mixed
+     */
     public function getUnusedIndice()
     {
         try {
@@ -100,6 +108,11 @@ class Blog extends Model
         }
     }
 
+    /**
+     * 创建索引
+     *
+     * @return mixed
+     */
     public function createIndice(array $unused)
     {
         return Elasticsearch::indices()->create(
@@ -122,6 +135,11 @@ class Blog extends Model
         );
     }
 
+    /**
+     * 创建字段映射
+     *
+     * @return mixed
+     */
     public function putMapping($unused)
     {
         $properties = [
@@ -148,7 +166,7 @@ class Blog extends Model
 	    'year_month' => ['type' => 'long'],
 	    'user_id' => ['type' => 'long'],
 	    'id' => ['type' => 'long'],
-	];
+    ];
 
         Elasticsearch::indices()->putMapping(
 		    $unused + [
@@ -160,9 +178,14 @@ class Blog extends Model
 			    ],
 		        ],
 		    ]
-	);
+	    );
     }
 
+    /**
+     * 获取在使用中的索引
+     *
+     * @return mixed
+     */
     public function getUsedIndice()
     {
         try {
@@ -177,6 +200,11 @@ class Blog extends Model
         }
     }
 
+    /**
+     * 获取博文列表
+     *
+     * @return mixed
+     */
     public function getList(Collection $input)
     {
         return self::select(explode(',', $input->get('select', '*')))
