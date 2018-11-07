@@ -34,7 +34,7 @@ class SearchController extends Controller
                 'query' => [
                     'multi_match' => [
                         'query' => $q,
-                        'fields' => ['title^3', 'description'],
+                        'fields' => ['title^3', 'tags^2', 'description'],
                     ],
                 ],
                 'highlight' => [
@@ -45,7 +45,7 @@ class SearchController extends Controller
             ];
             info('query:'.json_encode($criteria));
         } else {
-            $criteria = ['sort' => ['reading' => 'desc'], 'query' => ['match_all' => new \StdClass()]];
+            $criteria = ['sort' => ['reading' => 'asc'], 'query' => ['match_all' => new \StdClass()]];
         }
         $result = ElasticSearch::search(array_merge($default, ['body' => $criteria]));
 

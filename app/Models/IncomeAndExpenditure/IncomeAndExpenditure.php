@@ -13,13 +13,13 @@ use App\Models\Model;
 use Cviebrock\LaravelElasticsearch\Facade as Elasticsearch;
 use Illuminate\Support\Collection;
 
-class Blog extends Model
+class IncomeAndExpenditure extends Model
 {
-    protected $table = 'blogs';
+    protected $table = 'income_and_expenditure';
 
-    protected $esIndex = [0 => 'blog_v0', 1 => 'blog_v1'];
+    protected $esIndex = [0 => 'income_and_expenditure_v0', 1 => 'income_and_expenditure_v1'];
 
-    protected $esAliasIndex = 'blog';
+    protected $esAliasIndex = 'income_and_expenditure';
 
     protected $esType = 'boboidea';
 
@@ -27,7 +27,7 @@ class Blog extends Model
     {
         parent::__construct();
         $this->esAliasIndex = $this->esAliasIndex . env('APP_ENV');
-        $this->esIndex = collect(['blog_v0', 'blog_v1'])->map(function ($item) {
+        $this->esIndex = collect(['income_and_expenditure_v0', 'income_and_expenditure_v1'])->map(function ($item) {
             return sprintf('%s_%s', $item, env('APP_ENV'));
         });
     }
@@ -59,12 +59,7 @@ class Blog extends Model
         }
         $this->createIndice($unused);
         $this->putMapping($unused);
-        $list = $this->getList(collect(['select' => 'id,user_id,title,description,reading,created_at,tags']))
-            ->map(function ($item) {
-                $item['created_at'] = strval($item['created_at']);
-
-                return $item;
-            });
+        $list = $this->getList(collect(['select' => 'id,user_id,amount,date,item,remark,type,source']));
         foreach ($list->chunk(10) as $chunk) {
             $params = ['body' => []];
             foreach ($chunk as $product) {
@@ -148,17 +143,17 @@ class Blog extends Model
     public function putMapping($unused)
     {
         $properties = [
-	    'title' => [
+	    'item' => [
 	        'type' => 'text', 'boost' => 50.0, 'analyzer' => 'ik_max_word',
 	        'search_analyzer' => 'ik_smart', 'copy_to' => 'combined',
 	        'fields' => ['keyword' => ['type' => 'keyword']],
 	    ],
-	    'description' => [
+	    'remark' => [
 	        'type' => 'text', 'boost' => 2, 'analyzer' => 'ik_max_word',
 	        'search_analyzer' => 'ik_smart', 'copy_to' => 'combined',
 	        'fields' => ['keyword' => ['type' => 'keyword']],
 	    ],
-        'taga' => [
+        'source' => [
             'type' => 'text', 'analyzer' => 'ik_max_word',
             'search_analyzer' => 'ik_smart', 'copy_to' => 'combined',
             'fields' => ['keyword' => ['type' => 'keyword']],
@@ -167,8 +162,9 @@ class Blog extends Model
 	        'type' => 'text', 'boost' => 2, 'analyzer' => 'ik_max_word',
 	        'search_analyzer' => 'ik_smart',
 	    ],
-	    'reading' => ['type' => 'long'],
-	    'created_at' => ['type' => 'date', 'format' => 'yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis'],
+	    'type' => ['type' => 'long'],
+	    'amount' => ['type' => 'double'],
+	    'dete' => ['type' => 'date', 'format' => 'yyyy-MM-dd'],
 	    'user_id' => ['type' => 'long'],
 	    'id' => ['type' => 'long'],
     ];
@@ -213,6 +209,11 @@ class Blog extends Model
     public function getList(Collection $input)
     {
         return self::select(explode(',', $input->get('select', '*')))
-            ->get();
+            ->get()
+            ->map(function($item) {
+                $item['date'] = date('Y-m-d', $item['date']);
+
+                return $item;
+            );
     }
 }
