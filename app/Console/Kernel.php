@@ -25,6 +25,7 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         $schedule->command('index:bulk "App\\Models\\Blog\\Blog"')->hourly()->withoutOverlapping();
+        $schedule->command('index:bulk "App\\Models\\Mu\\MuDealHistory"')->hourlyAt(20)->withoutOverlapping();
     }
 
     /**
